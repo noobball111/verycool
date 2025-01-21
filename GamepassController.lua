@@ -1,4 +1,3 @@
-print("workedhaha")
 ----- Servies -----
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MarketplaceService = game:GetService("MarketplaceService")
