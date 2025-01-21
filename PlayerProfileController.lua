@@ -1,4 +1,3 @@
-print("Profiler")
 local module = {}
 
 --local remoteevent = game:GetService("ReplicatedStorage").data
