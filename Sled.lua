@@ -43,7 +43,8 @@ for _,spawner: Part in ipairs(Spawners:GetChildren()) do
 		--seat:Sit(Humanoid)
 		
 		task.defer(function()
-			task.wait(40)
+			task.wait(60*5)
+			if ClonedSled == nil then return end
 			ClonedSled:Destroy()
 		end)
 	end)
