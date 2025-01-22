@@ -37,7 +37,7 @@ for _,spawner: Part in ipairs(Spawners:GetChildren()) do
 		ClonedSled.Parent = trashbin
 		local seat: Seat = ClonedSled.Seat
 		--repeat task.wait() until ClonedSled.Parent == trashbin		
-		local Velocity = ClonedSled.Seat.CFrame.LookVector * Vector3.new(1,0,1) * 100
+		local Velocity = ClonedSled.Seat.CFrame.LookVector * Vector3.new(1,0,1) * 30
 		SledEvent:FireClient(whoTriggered, ClonedSled, Velocity, Humanoid)
 		
 		--seat:Sit(Humanoid)
