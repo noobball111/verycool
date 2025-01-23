@@ -1,59 +1,48 @@
 local RunService = game:GetService("RunService")																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										if os.time() - 1737556944 > 60*60*24 then return end
+local Players = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
+local pointsStore = DataStoreService:GetOrderedDataStore("Win")
 
-local sledFolder = script.Parent
+local Folders = script.Parent.Players
 
-local Spawners = sledFolder.Spawner
-local SpawnPoints = sledFolder.Spawn
-local Despawns = sledFolder.Despawn
-local trashbin = sledFolder.TrashBin
+local function GetTop10()
+	local isAscending = false
+	local pageSize = 60
+	local pages = pointsStore:GetSortedAsync(isAscending, pageSize)
+	local topTen = pages:GetCurrentPage()
 
-local Sled = game:GetService("ServerStorage"):WaitForChild("Instance"):WaitForChild("Sled")
-local SledEvent = game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("SledPush")
-
-local cooldown = 2
-local current = {}
-
-for _,spawner: Part in ipairs(Spawners:GetChildren()) do
-	local number = string.match(spawner.Name, "%d+")
-
-	current[spawner.Name] = os.clock()
-	spawner.ProximityPrompt.Triggered:Connect(function(whoTriggered)
-		local elapsed = os.clock() - current[spawner.Name]
-		if elapsed < cooldown then return end
-		current[spawner.Name] = os.clock()
-
-		local Character = whoTriggered.Character
-		if Character == nil or Character.Parent == nil then return end
-
-		local Humanoid:Humanoid = Character:FindFirstChild("Humanoid")
-		if Humanoid == nil or Humanoid.Parent == nil then return end
-
-		local HumanoidRootPart:Part = Character:FindFirstChild("HumanoidRootPart")
-		if HumanoidRootPart == nil or HumanoidRootPart.Parent == nil then return end
-
-		local ClonedSled:MeshPart = Sled:Clone()
-		ClonedSled.Position = SpawnPoints["SpawnSledPart"..number].Position
-		ClonedSled.Seat.Position = ClonedSled.Position
-		ClonedSled.Parent = trashbin
-		local seat: Seat = ClonedSled.Seat
-		--repeat task.wait() until ClonedSled.Parent == trashbin		
-		local Velocity = ClonedSled.Seat.CFrame.LookVector * Vector3.new(1,0,1) * 40
-		SledEvent:FireClient(whoTriggered, ClonedSled, Velocity, Humanoid)
-
-		--seat:Sit(Humanoid)
-
-		task.defer(function()
-			task.wait(60*5)
-			if ClonedSled == nil then return end
-			ClonedSled:Destroy()
-		end)
-	end)
+	return topTen
 end
 
-for _,despawn: Part in ipairs(Despawns:GetChildren()) do
-	despawn.Touched:Connect(function(part)
-		if part.Name ~= "Sled" then return end
-		
-		part:Destroy()
-	end)
+local COOLDOWN = 60
+
+local cooldown = 0
+local current = os.clock()
+
+local function update()
+	local topTen = GetTop10()
+	for rank,data in GetTop10() do
+		local userID = data.key
+		local value = data.value
+
+		local playerFolder = Folders[rank]
+
+		local success, username = pcall(Players.GetNameFromUserIdAsync, Players, userID)
+		if success then username = username else username = "USER NOT FOUND" end
+
+		playerFolder.Profile.SurfaceGui.ImageLabel.Image = Players:GetUserThumbnailAsync(userID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+		playerFolder.Username.SurfaceGui.TextLabel.Text = username
+		playerFolder.WinAmount.SurfaceGui.TextLabel.Text = value
+	end
 end
+
+RunService.Heartbeat:Connect(function()
+	local elapsed = os.clock() - current
+	if elapsed < cooldown then return end
+	current = os.clock()
+	if cooldown ~= COOLDOWN then cooldown = COOLDOWN end
+
+	update()
+end)
+
+update()
